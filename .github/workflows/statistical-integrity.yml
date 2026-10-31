@@ -13,4 +13,4 @@ jobs:
       - name: Node version
         run: node --version
       - name: Verify canonical plays, season mappings and postseason
-        run: node --test tests/play-database.test.cjs tests/season-source-map.test.cjs tests/postseason-records.test.cjs tests/situational-audit.test.cjs
+        run: node --test tests/play-database.test.cjs tests/season-source-map.test.cjs tests/postseason-records.test.cjs tests/situational-audit.test.cjs tests/live-log-parser.test.cjs
