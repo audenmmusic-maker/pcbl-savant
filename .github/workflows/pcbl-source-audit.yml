@@ -1,0 +1,15 @@
+name: Inspect live PCBL game-log bridge
+on:
+  push:
+    paths:
+      - '.github/workflows/pcbl-source-audit.yml'
+      - 'scripts/pcbl-source-audit.cjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read-only-source-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node scripts/pcbl-source-audit.cjs
