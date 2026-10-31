@@ -8,25 +8,17 @@ function sourceAudit(){
  const auditor=window.PCBLSituationalAudit;
  if(!auditor)return '';
  const stage=$('sitStage').value,season=$('sitSeason').value,player=$('sitPlayer').value;
- if(stage==='postseason')return '<p class="sit-data-warning">POSTSEASON: these are recorded game-log events, not verified against official playoff batting totals. Missing or extra plays cannot be allocated to specific situations automatically.</p>';
- const official=window.PCBLGetOfficialSeasonStats?.()||window.PCBL_SNAPSHOT||{};
- const audits=auditor.audit(window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[],official,season,player);
+ if(stage==='postseason')return '<p class="hint">Postseason situational splits reflect recorded plays. Official postseason totals are displayed separately in the Database.</p>';
+ const audits=auditor.audit(window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[],window.PCBLGetOfficialSeasonStats?.()||window.PCBL_SNAPSHOT||{},season,player);
  const verified=audits.filter(x=>x.officialPA!==null);
- if(!verified.length)return '<p class="sit-data-warning">SOURCE COVERAGE UNVERIFIED: there are no official regular-season batting totals to reconcile for this selection. These splits only cover recorded events.</p>';
+ if(!verified.length)return '<p class="hint">Situational splits cover recorded plays only. Official season totals are shown in the Database.</p>';
  const mismatched=verified.filter(x=>!x.matched);
- const filtered=[$('sitInning').value,$('sitBases').value,$('sitSituation').value,$('sitHalf').value,$('sitPark').value,$('sitCount').value].some(x=>x!=='ALL');
- const limited=filtered||stage==='both';
- const focused=season!=='ALL'&&player!=='ALL'&&verified.length===1?verified[0]:null;
- let intro='';
- if(focused){
-   const delta=focused.delta,major=delta!==0,other=Object.entries(focused.differences).filter(([k])=>k!=='PA').map(([k,d])=>k+' '+(d>0?'+':'')+d);
-   const coverage=focused.recordGames===null?focused.games+' logged games':focused.games+'/'+focused.recordGames+' games present';
-   const discrepancy=major?Math.abs(delta)+' PA '+(delta<0?'below':'above')+' the official total':other.length?'PA matches, but other events differ':'PA and other tracked counts match';
-   intro=`<p class="sit-data-warning"><strong>${major||other.length||focused.sheetOvercount||focused.games!==focused.recordGames?'SOURCE DATA MISMATCH':'EVENT-LOG COVERAGE CHECK'} · ${escape(focused.season)} ${escape(focused.player.toUpperCase())}</strong>: ${focused.logged.PA} logged PA / ${focused.officialPA} official PA · ${escape(discrepancy)} · ${escape(coverage)}.${other.length?' Other count differences (logged minus official): '+escape(other.join(', '))+'.':''}${focused.sheetOvercount?' OFFICIAL SHEET CHECK: AB + BB + HBP = '+focused.minimumPA+', exceeding listed PA by '+focused.sheetOvercount+'.':''} ${limited?'The filters above narrow the displayed sample further; these reference counts describe the full regular season.':'Situational rates use logged plays only; discrepancies cannot be assigned to innings or base states without corrected game logs.'}</p>`;
- }else if(mismatched.length){intro=`<p class="sit-data-warning"><strong>PARTIAL / INCONSISTENT GAME LOGS</strong> · ${mismatched.length} of ${verified.length} player-season sources differ from the official regular-season sheet. The numbers below are logged-event samples, not necessarily complete season totals.${limited?' Your filters may reduce the displayed sample further.':''}</p>`}
- else intro=`<p class="sit-data-warning"><strong>EVENT-LOG COVERAGE CHECK</strong> · ${verified.length} regular-season player-season sources match their official counting stats. Situational breakdowns still rely on the recorded events.${limited?' Your filters reduce the displayed sample.':''}</p>`;
- const cells=verified.map(x=>{const diff=x.delta,missingGames=x.recordGames!==null&&x.games!==x.recordGames;return `<tr><th>${escape(x.season+' '+x.player)}</th><td>${x.logged.PA}</td><td>${x.officialPA}</td><td>${diff===0?'0':(diff>0?'+':'')+diff}</td><td>${x.games}${x.recordGames!==null?'/'+x.recordGames:''}${missingGames?' !':''}</td><td>${x.sheetOvercount?'CHECK: '+x.minimumPA+' minimum PA vs '+x.officialPA+' listed':'—'}</td><td>${escape(Object.entries(x.differences).filter(([k])=>k!=='PA').map(([k,d])=>k+' '+(d>0?'+':'')+d).join(', ')||'—')}</td></tr>`}).join('');
- return intro+`<details class="method"><summary>SOURCE AUDIT · ${mismatched.length} INCONSISTENT / ${verified.length} CHECKED · VIEW SEASONS AND PLAYERS</summary><div class="table-wrap"><table class="sit-table"><thead><tr><th>PLAYER / SEASON</th><th>LOG PA</th><th>OFFICIAL PA</th><th>DIFFERENCE</th><th>GAMES</th><th>OFFICIAL SHEET CHECK</th><th>OTHER LOG − SHEET DIFFERENCES</th></tr></thead><tbody>${cells}</tbody></table></div><p class="hint">The official sheet is the provisional source for season totals, but its own counting stats also require validation. Log-only splits cannot be repaired by inserting invented plays. A game may be present but have an incomplete or overcounted sequence. Postseason games are excluded from this regular-season reconciliation.</p></details>`;
+ const cells=verified.map(x=>{
+  const diff=x.delta,missingGames=x.recordGames!==null&&x.games!==x.recordGames;
+  return `<tr><th>${escape(x.season+' '+x.player)}</th><td>${x.logged.PA}</td><td>${x.officialPA}</td><td>${diff===0?'0':(diff>0?'+':'')+diff}</td><td>${x.games}${x.recordGames!==null?'/'+x.recordGames:''}${missingGames?' !':''}</td><td>${x.sheetOvercount?'CHECK: '+x.minimumPA+' implied PA vs '+x.officialPA+' listed':'—'}</td></tr>`;
+ }).join('');
+ return '<p class="hint">Situational splits are based on recorded plays; published season totals come from the official sheet.</p>'+
+ `<details class="method"><summary>CHECK GAME-LOG COVERAGE (OPTIONAL)</summary><p class="hint">${mismatched.length} of ${verified.length} player-season comparisons need scorer review. No historical totals have been automatically changed.</p><div class="table-wrap"><table class="sit-table"><thead><tr><th>PLAYER / SEASON</th><th>LOG PA</th><th>OFFICIAL PA</th><th>DIFFERENCE</th><th>GAMES</th><th>OFFICIAL SHEET CHECK</th></tr></thead><tbody>${cells}</tbody></table></div></details>`;
 }
 
 function reconstruct(game){
