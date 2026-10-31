@@ -10,7 +10,7 @@
 ## Source-by-source audit
 - S1: OFFICIAL GAME LOGS (1).docx includes a PCBL Statistics & Operations statement that S1 games 2, 4, 6, 7 and 8 contained known PA/AB discrepancies and the original logs were intentionally not rewritten. This is a documented historical limitation.
 - S2: OFFICIAL GAME LOGS.docx was re-parsed with the site parser. Its 12 saved game-event sequences and counts matched the original. Auden S2 PA=96 matches. Jarvis's official K/BB still differ by one each.
-- S3: Eleven game IDs and all six Auden games exist in the saved archive; Auden has 92 logged PA vs 109 official PA; a later live screenshot shows 88. The original S3 Word/Google Doc text was not available to independently pinpoint the missing/misread plays; this discrepancy remains unresolved.
+- S3: The public Google Docs bridge exposed a CR-only line break before BOT 3 in Game 2. The previous parser missed that marker and assigned four Auden PAs to Najee, producing 88 live PA instead of 92. CR, CRLF and LF handling has been fixed. The separate 92 logged vs 109 official sheet mismatch remains unresolved.
 - Official-sheet arithmetic: S1 Jarvis listed 81 PA vs AB+BB+HBP=82; S1 Coel 17 vs 18; S3 Auden 109 vs 110; S3 Najee 86 vs 88. Review original scorekeeping before editing those cells.
 - Full saved archive reconciliation by player and season: reports/archived-reconciliation.json.
 
@@ -23,7 +23,7 @@ SEASON 4 __ G1 - Sheet1.pdf verifies the same regular-season player columns as S
 If S4/S5 are added to the main official sheet's gid=0, the season-label parser discovers them automatically. If separate Google sheets/tabs are used, fill in spreadsheetId and gid in public/season-source-config.js; the same parser validates their expected season label. S5 is provisionally mapped to the same player columns until its actual source is supplied. Live IDs for S4/S5 are not available and have not been fabricated.
 
 ## Remaining source dependencies
-To resolve outstanding discrepancies, obtain the original S3 game log text; to populate live S4/S5 totals, supply their actual sheet links/tabs. If new postseason rounds/ambiguous player initials appear, review routing before counting them.
+To resolve outstanding discrepancies, review the live S3 Google Doc against the official scoring notes; obtain the S4/S5 sheet links to enable their separate live feeds.
 Do not claim season-source statistical completeness merely because a game log was parsed successfully.
 
 ## Testing
