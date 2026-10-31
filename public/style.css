@@ -263,3 +263,16 @@ main{padding-top:8px}
 @media(max-width:600px){.savant-menu{grid-template-columns:repeat(2,minmax(0,1fr))}.savant-sub{min-height:44px}.savant-sub .menu-label{font-size:14px}.menu-heading small{font-size:9px}}
 @media(max-width:380px){.savant-menu{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:850px){.topbar{height:58px;min-height:58px;padding:0 12px;gap:10px}.brand{min-width:auto}.brand-image{width:32px;height:32px}.brand strong{font-size:18px}.topbar nav .nav{padding:0 9px}.status{font-size:9px}main{padding-top:7px}}
+
+/* Shared data-source status: neutral styling, never conceal inconsistent entries. */
+.pcbl-integrity{max-width:1300px;margin:10px auto 4px;padding:8px 14px;border:1px solid rgba(186,238,185,.22);border-radius:10px;color:#a4c3a8;font-size:11px;line-height:1.5}
+.pcbl-integrity-heading{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.pcbl-integrity-heading strong{color:#baff83;font-weight:800;letter-spacing:.08em}
+.pcbl-integrity-heading span{flex:1}
+.pcbl-integrity button{font:inherit;font-weight:700;cursor:pointer;border:1px solid rgba(186,238,185,.4);background:transparent;color:#baff83;border-radius:6px;padding:5px 10px}
+.pcbl-integrity details{margin-top:6px}
+.pcbl-integrity summary{cursor:pointer;color:#c8dccc;font-weight:700}
+.pcbl-integrity p{margin:8px 0}
+.pcbl-integrity table{width:100%;font-size:11px;border-collapse:collapse;margin-top:8px}
+.pcbl-integrity th,.pcbl-integrity td{border-bottom:1px solid rgba(186,238,185,.17);padding:6px;text-align:left}
+@media(max-width:680px){.pcbl-integrity{margin:8px 12px 0}.pcbl-integrity-heading span{flex-basis:100%}}

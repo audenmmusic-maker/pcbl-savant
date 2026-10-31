@@ -308,7 +308,10 @@
     });
   }
 
+  function parentUnified(){try{return window.parent!==window?window.parent.PCBLUnified:null}catch(_){return null}}
   function loadLiveSheet() {
+    const hub=parentUnified();
+    if(hub)return Promise.resolve(hub.exportRows());
     return new Promise((resolve, reject) => {
       const callback = `pcblSheet_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
       const script = document.createElement("script");
@@ -1276,7 +1279,7 @@
         state.sheetSource = "live";
         populatePCBLBlocks();
         dom.sheetStatus.className = "live-chip live";
-        dom.sheetStatus.innerHTML = "<span></span> LIVE SHEET CONNECTED";
+        dom.sheetStatus.innerHTML = "<span></span> "+(parentUnified()?"SYNCED WITH PCBL SAVANT":"LIVE SHEET CONNECTED");
       }
     } catch (_) {
       dom.sheetStatus.className = "live-chip fallback";
@@ -1284,6 +1287,18 @@
     }
   }
 
+  function onSharedDataUpdate() {
+    const hub=parentUnified();if(!hub)return;
+    try{
+      const previous=dom.pcblRange.value;
+      state.pcbl=parseSheet(hub.exportRows());state.sheetSource='shared';
+      populatePCBLBlocks();
+      if([...dom.pcblRange.options].some(o=>o.value===previous))dom.pcblRange.value=previous;
+      dom.sheetStatus.className='live-chip live';
+      dom.sheetStatus.innerHTML='<span></span> SYNCED WITH PCBL SAVANT';
+    }catch(error){console.warn('Embedded comparison sync skipped',error)}
+  }
+  try{parentUnified()&&window.parent.addEventListener('pcbl-data-updated',onSharedDataUpdate)}catch(_){}
   window.PCBL_APP = {
     parseSheet,
     pcblStatsFor,

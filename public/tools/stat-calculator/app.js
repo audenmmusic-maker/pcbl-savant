@@ -116,7 +116,10 @@
     return { ...hitting,...pitching };
   }
 
+  function parentUnified(){try{return window.parent!==window?window.parent.PCBLUnified:null}catch(_){return null}}
   function loadLiveSheet() {
+    const hub=parentUnified();
+    if(hub)return Promise.resolve(hub.exportRows());
     return new Promise((resolve,reject)=>{
       const callback=`pcblCalculator_${Date.now()}_${Math.floor(Math.random()*10000)}`;
       const script=document.createElement("script");
@@ -313,7 +316,7 @@
       if (Object.keys(live).length>=Object.keys(state.pcbl).length) {
         state.pcbl=live; state.source="live"; populateControls();
         dom.status.className="data-status live";
-        dom.status.innerHTML="<i></i> LIVE PCBL SHEET CONNECTED";
+        dom.status.innerHTML="<i></i> "+(parentUnified()?"SYNCED WITH PCBL SAVANT":"LIVE PCBL SHEET CONNECTED");
       }
     } catch (_) {}
   }
@@ -323,6 +326,18 @@
   dom.copy.addEventListener("click",copyResult);
   dom.another.addEventListener("click",()=>{ dom.results.hidden=true; dom.value.focus(); window.scrollTo({top:0,behavior:"smooth"}); });
 
+  function onSharedDataUpdate(){
+    const hub=parentUnified();if(!hub)return;
+    try{
+      const previous=dom.pcblRange.value;
+      state.pcbl=parseSheet(hub.exportRows());state.source='shared';
+      populateControls();
+      if([...dom.pcblRange.options].some(o=>o.value===previous))dom.pcblRange.value=previous;
+      dom.status.className='data-status live';
+      dom.status.innerHTML='<i></i> SYNCED WITH PCBL SAVANT';
+    }catch(error){console.warn('Embedded calculator sync skipped',error)}
+  }
+  try{parentUnified()&&window.parent.addEventListener('pcbl-data-updated',onSharedDataUpdate)}catch(_){}
   window.PCBL_TRANSLATOR={ parseSheet,pcblBaseline,combineHitting,combinePitching,getMLBBaseline,translateValue,STATS,state };
   init().catch((error)=>{ dom.error.textContent=error?.message||"PCBL data could not be loaded."; dom.error.hidden=false; });
 })();
