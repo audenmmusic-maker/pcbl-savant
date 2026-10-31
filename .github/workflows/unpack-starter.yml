@@ -1,0 +1,41 @@
+name: Unpack Savant starter
+on:
+  push:
+    paths:
+      - '.github/workflows/unpack-starter.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Extract starter into repository root
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          from pathlib import Path
+          name = Path("pcbl-savant-cloudflare-starter.zip")
+          assert name.is_file(), "Starter ZIP missing"
+          with ZipFile(name) as z:
+              for info in z.infolist():
+                  path = Path(info.filename)
+                  assert not path.is_absolute() and ".." not in path.parts, "Unsafe zip path"
+              z.extractall(".")
+          assert Path("public/index.html").is_file(), "index.html missing"
+          assert Path("wrangler.jsonc").is_file(), "wrangler.jsonc missing"
+          PY
+      - name: Commit unpacked site and remove archive
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f pcbl-savant-cloudflare-starter.zip
+          git add -A
+          git commit -m "Unpack Savant website for Cloudflare Workers"
+          git push origin HEAD:main
