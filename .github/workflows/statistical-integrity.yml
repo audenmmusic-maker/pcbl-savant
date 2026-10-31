@@ -1,0 +1,16 @@
+name: Savant statistical integrity
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Node version
+        run: node --version
+      - name: Verify canonical plays, season mappings and postseason
+        run: node --test tests/play-database.test.cjs tests/season-source-map.test.cjs tests/postseason-records.test.cjs tests/situational-audit.test.cjs

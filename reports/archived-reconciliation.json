@@ -1,0 +1,187 @@
+{
+  "generated": "2026-10-31",
+  "scope": "Saved archival snapshot, regular-season counts S1-S3 only. Live Google Docs may differ.",
+  "sources": {
+    "official": "public/data.json (archived official season snapshot)",
+    "playByPlay": "public/versus-data.js (archived reconstructed game log events)"
+  },
+  "summary": {
+    "games": 35,
+    "events": 1014,
+    "checked": 12,
+    "matches": 2,
+    "disagreements": 10
+  },
+  "entries": [
+    {
+      "season": "S1",
+      "player": "Auden",
+      "status": "LOG_DISCREPANCY",
+      "officialPA": 70,
+      "loggedPA": 73,
+      "differences": {
+        "PA": 3,
+        "AB": 1,
+        "HBP": 2
+      },
+      "minimumPA": 70,
+      "loggedGames": 6,
+      "officialGames": 6
+    },
+    {
+      "season": "S1",
+      "player": "Jason",
+      "status": "LOG_DISCREPANCY",
+      "officialPA": 70,
+      "loggedPA": 68,
+      "differences": {
+        "PA": -2,
+        "AB": -1,
+        "H": -1,
+        "HR": -1
+      },
+      "minimumPA": 69,
+      "loggedGames": 6,
+      "officialGames": 6
+    },
+    {
+      "season": "S1",
+      "player": "Jarvis",
+      "status": "SHEET_ARITHMETIC",
+      "officialPA": 81,
+      "loggedPA": 82,
+      "differences": {
+        "PA": 1
+      },
+      "minimumPA": 82,
+      "loggedGames": 5,
+      "officialGames": 5
+    },
+    {
+      "season": "S1",
+      "player": "Coel",
+      "status": "SHEET_ARITHMETIC",
+      "officialPA": 17,
+      "loggedPA": 17,
+      "differences": {
+        "BB": -1
+      },
+      "minimumPA": 18,
+      "loggedGames": 1,
+      "officialGames": 1
+    },
+    {
+      "season": "S2",
+      "player": "Auden",
+      "status": "MATCH",
+      "officialPA": 96,
+      "loggedPA": 96,
+      "differences": {},
+      "minimumPA": 96,
+      "loggedGames": 6,
+      "officialGames": 6
+    },
+    {
+      "season": "S2",
+      "player": "Jarvis",
+      "status": "LOG_DISCREPANCY",
+      "officialPA": 99,
+      "loggedPA": 99,
+      "differences": {
+        "BB": 1,
+        "K": 1
+      },
+      "minimumPA": 98,
+      "loggedGames": 6,
+      "officialGames": 6
+    },
+    {
+      "season": "S2",
+      "player": "Najee",
+      "status": "MATCH",
+      "officialPA": 91,
+      "loggedPA": 91,
+      "differences": {},
+      "minimumPA": 91,
+      "loggedGames": 6,
+      "officialGames": 6
+    },
+    {
+      "season": "S3",
+      "player": "Auden",
+      "status": "SHEET_ARITHMETIC",
+      "officialPA": 109,
+      "loggedPA": 92,
+      "differences": {
+        "PA": -17,
+        "AB": -9,
+        "H": -2,
+        "2B": -1,
+        "BB": -9,
+        "K": -1
+      },
+      "minimumPA": 110,
+      "loggedGames": 6,
+      "officialGames": 6
+    },
+    {
+      "season": "S3",
+      "player": "Jason",
+      "status": "LOG_DISCREPANCY",
+      "officialPA": 78,
+      "loggedPA": 78,
+      "differences": {
+        "BB": 1,
+        "K": 1
+      },
+      "minimumPA": 77,
+      "loggedGames": 6,
+      "officialGames": 6
+    },
+    {
+      "season": "S3",
+      "player": "Jarvis",
+      "status": "LOG_DISCREPANCY",
+      "officialPA": 73,
+      "loggedPA": 74,
+      "differences": {
+        "PA": 1,
+        "BB": 2,
+        "HBP": -1,
+        "K": 1
+      },
+      "minimumPA": 73,
+      "loggedGames": 5,
+      "officialGames": 5
+    },
+    {
+      "season": "S3",
+      "player": "Najee",
+      "status": "SHEET_ARITHMETIC",
+      "officialPA": 86,
+      "loggedPA": 88,
+      "differences": {
+        "PA": 2,
+        "AB": 1,
+        "H": 1,
+        "2B": 1,
+        "BB": -1,
+        "K": 1
+      },
+      "minimumPA": 88,
+      "loggedGames": 5,
+      "officialGames": 5
+    },
+    {
+      "season": "S3",
+      "player": "Coel",
+      "status": "LOG_DISCREPANCY",
+      "officialPA": 0,
+      "loggedPA": 0,
+      "differences": {},
+      "minimumPA": 0,
+      "loggedGames": 0,
+      "officialGames": 1
+    }
+  ]
+}

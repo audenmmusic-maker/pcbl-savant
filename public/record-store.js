@@ -9,8 +9,8 @@ const historical={
 };
 let official=()=>root.PCBL_SNAPSHOT||{};
 const valid=(score)=>Array.isArray(score)&&score.length===2&&score.every(x=>x!==null&&x!==''&&Number.isFinite(Number(x)))&&Number(score[0])!==Number(score[1]);
-const seasons=()=>[...new Set([...Object.keys(official()||{}),...Object.keys(historical),...(root.PCBL_VERSUS||[]).map(g=>g.season)].filter(x=>/^S\d+$/.test(x)))].sort((a,b)=>Number(a.slice(1))-Number(b.slice(1)));
-function games(name,season,phase,park){return (root.PCBL_VERSUS||[]).filter(g=>g.season===season&&g.phase===phase&&(g.top===name||g.bottom===name)&&(park==='ALL'||(g.events||[]).some(e=>root.PCBLParkData?.resolve(g,e)===park)));}
+const seasons=()=>[...new Set([...Object.keys(official()||{}),...Object.keys(historical),...(root.PCBLPlayDB?.games()||root.PCBL_VERSUS||[]).map(g=>g.season)].filter(x=>/^S\d+$/.test(x)))].sort((a,b)=>Number(a.slice(1))-Number(b.slice(1)));
+function games(name,season,phase,park){return (root.PCBLPlayDB?.games()||root.PCBL_VERSUS||[]).filter(g=>g.season===season&&g.phase===phase&&(g.top===name||g.bottom===name)&&(park==='ALL'||(g.events||[]).some(e=>root.PCBLParkData?.resolve(g,e)===park)));}
 function fromScores(list,name){let w=0,l=0,missing=0;for(const g of list){if(!valid(g.score)){missing++;continue}const mine=Number(g.score[g.top===name?0:1]),them=Number(g.score[g.top===name?1:0]);if(mine>them)w++;else l++;}return {w,l,missing,known:w+l,total:list.length,source:'GAME SCORES',complete:missing===0};}
 function one(name,season,phase,park){const logged=games(name,season,phase,park);
  if(park==='ALL'&&phase==='postseason'&&historical[season]?.[name]){const [w,l]=historical[season][name];return {w,l,known:w+l,total:Math.max(w+l,logged.length),missing:0,source:'OFFICIAL POSTSEASON SUMMARY',complete:true};}

@@ -1,19 +1,13 @@
 (() => {
   'use strict';
-  let games=window.PCBL_VERSUS||[];const names=['Auden','Jason','Jarvis','Najee','Coel'];
+  let games=window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[];const names=['Auden','Jason','Jarvis','Najee','Coel'];
   const byId=id=>document.getElementById(id);
   const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const gameLabel=g=>`${g.season} · ${g.stage==='regular'?'REGULAR SEASON':g.stage==='wild_card'?'WILD CARD':'CHAMPIONSHIP'} GAME ${g.number}`;
   const scoreLabel=g=>g.score?`${g.top.toUpperCase()} ${g.score[0]}–${g.score[1]} ${g.bottom.toUpperCase()}`:'SCORE NOT LISTED IN LOG HEADING';
   const rate=n=>n===null?'—':n.toFixed(3).replace(/^0\./,'.');
   function selected(){return {b:byId('versusBatter').value,p:byId('versusPitcher').value,s:byId('versusSeason').value,phase:byId('versusPhase').value,game:byId('versusGame').value,park:byId('versusPark').value}}
-  function tally(events){
-    const a={PA:events.length,H:0,HR:0,BB:0,K:0,HBP:0,'1B':0,'2B':0,'3B':0,AB:0};
-    for(const e of events){const r=e.result;if(r in a)a[r]++;if(['1B','2B','3B','HR'].includes(r))a.H++;if(!['BB','HBP'].includes(r))a.AB++}
-    a.AVG=a.AB?a.H/a.AB:null;a.OBP=a.PA?(a.H+a.BB+a.HBP)/a.PA:null;
-    a.SLG=a.AB?(a['1B']+2*a['2B']+3*a['3B']+4*a.HR)/a.AB:null;
-    a.OPS=a.OBP!==null&&a.SLG!==null?a.OBP+a.SLG:null;return a;
-  }
+  function tally(events){return window.PCBLPlayDB.count(events);}
   function gameChoices(){
     const {s,phase,game}=selected();
     const available=games.filter(g=>(s==='ALL TIME'||g.season===s)&&(phase==='both'||g.phase===phase));
@@ -44,6 +38,6 @@
   byId('versusBatter').value='Auden';byId('versusPitcher').value='Najee';
   for(const id of ['versusBatter','versusPitcher','versusSeason','versusPhase','versusGame','versusPark'])byId(id).addEventListener('change',paint);
   window.PCBLVersus={paint};
-  window.addEventListener('pcbl-logs-updated',()=>{games=window.PCBL_VERSUS||[];const picker=byId('versusSeason'),value=picker.value;for(const s of [...new Set(games.map(g=>g.season))].sort((a,b)=>Number(a.slice(1))-Number(b.slice(1))))if(![...picker.options].some(o=>o.value===s))picker.add(new Option('SEASON '+s.slice(1),s));picker.value=value;if(location.hash==='#versus')paint()});
+  window.addEventListener('pcbl-logs-updated',()=>{games=window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[];const picker=byId('versusSeason'),value=picker.value;for(const s of [...new Set(games.map(g=>g.season))].sort((a,b)=>Number(a.slice(1))-Number(b.slice(1))))if(![...picker.options].some(o=>o.value===s))picker.add(new Option('SEASON '+s.slice(1),s));picker.value=value;if(location.hash==='#versus')paint()});
   if(location.hash==='#versus')paint();
 })();

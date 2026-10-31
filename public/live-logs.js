@@ -18,14 +18,16 @@
     try{
       const result=window.PCBLLogParser.merge(payload,window.PCBL_VERSUS||initial);
       if(!result.updatedSeasons.length)throw Error('Missing season tabs');
-      const parkSync=window.PCBLParkData?.acceptTabs(payload.tabs,result.games)||{updated:0,issues:[]};
-      window.PCBL_VERSUS=result.games;
+      const check=window.PCBLPlayDB.replace(result.games,'live game logs');
+            if(!check.ok)throw Error('Game log validation failed: '+check.issues.join('; '));
+            const parkSync=window.PCBLParkData?.acceptTabs(payload.tabs,window.PCBLPlayDB.games())||{updated:0,issues:[]};
+            window.PCBL_VERSUS=window.PCBLPlayDB.games();
       window.PCBL_PARK_SYNC={liveParks:parkSync.updated,parkIssues:parkSync.issues,gameIssues:result.issues,updatedAt:new Date().toISOString()};
       live=true;
       finish(request);
-      const issues=result.issues.length+parkSync.issues.length;
+      const issues=result.issues.length+parkSync.issues.length+(accepted.drift?.length||0);
       const mapped=result.games.filter(g=>window.PCBLParkData?.gameParks(g).length).length;show('LIVE GAME LOGS · '+mapped+' GAME'+(mapped===1?'':'S')+' WITH VERIFIED PARKS · '+parkSync.updated+' FROM GAME PAGES · '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+(issues?' · '+issues+' NEED REVIEW':''));
-      if(issues)console.warn('PCBL game and park review:',result.issues,parkSync.issues);
+      if(issues)console.warn('PCBL game and park review:',result.issues,parkSync.issues,'Changed game event counts:',accepted.drift);
       window.dispatchEvent(new Event('pcbl-logs-updated'));
       schedule(900000);
     }catch(e){console.warn('PCBL live game and park update rejected:',e);failure(request,'INVALID')}

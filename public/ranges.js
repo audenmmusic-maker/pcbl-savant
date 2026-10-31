@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  let source=window.PCBL_VERSUS||[];
+  let source=window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[];
   const archive=new Map(source.map(g=>[g.id,g]));
   const names=['Auden','Jason','Jarvis','Najee','Coel'];
   const excluded={};
@@ -103,7 +103,7 @@
   byId('rangeDownload').addEventListener('click',download);
   window.PCBLRanges={paint,slots,scope};
   window.addEventListener('pcbl-logs-updated',()=>{
-    source=window.PCBL_VERSUS||[];archive.clear();for(const game of source)archive.set(game.id,game);
+    source=window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[];archive.clear();for(const game of source)archive.set(game.id,game);
     const next=[];for(const season of [...new Set([1,2,3,...source.map(g=>Number(g.season.slice(1)))])].sort((a,b)=>a-b)){
       const code=`S${season}`;
       for(let game=1;game<=Math.max(season===3?12:9,...source.filter(g=>g.season===code&&g.stage==='regular').map(g=>g.number));game++)next.push({season:code,stage:'regular',number:game,id:`${code}:regular:${game}`});

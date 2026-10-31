@@ -10,7 +10,7 @@ function sourceAudit(){
  const stage=$('sitStage').value,season=$('sitSeason').value,player=$('sitPlayer').value;
  if(stage==='postseason')return '<p class="sit-data-warning">POSTSEASON: these are recorded game-log events, not verified against official playoff batting totals. Missing or extra plays cannot be allocated to specific situations automatically.</p>';
  const official=window.PCBLGetOfficialSeasonStats?.()||window.PCBL_SNAPSHOT||{};
- const audits=auditor.audit(window.PCBL_VERSUS||[],official,season,player);
+ const audits=auditor.audit(window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[],official,season,player);
  const verified=audits.filter(x=>x.officialPA!==null);
  if(!verified.length)return '<p class="sit-data-warning">SOURCE COVERAGE UNVERIFIED: there are no official regular-season batting totals to reconcile for this selection. These splits only cover recorded events.</p>';
  const mismatched=verified.filter(x=>!x.matched);
@@ -53,10 +53,10 @@ function reconstruct(game){
   return {game,event,bases:before,outsBefore:verifiedOuts,estimatedOutsBefore:beforeOuts,leadoff,appearance,scoreDiff,count,park:window.PCBLParkData?.resolve(game,event)||null};
  });
 }
-function refresh(){rows=(window.PCBL_VERSUS||[]).flatMap(reconstruct);populateSeasons();populateCounts();paint()}
+function refresh(){rows=(window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[]).flatMap(reconstruct);populateSeasons();populateCounts();paint()}
 function populateCounts(){const el=$('sitCount');if(!el)return;const old=el.value;const counts=[...new Set(rows.map(x=>x.count).filter(Boolean))].sort();el.innerHTML='<option value="ALL">ALL COUNTS</option>'+counts.map(v=>`<option value="${escape(v)}">${escape(v)}</option>`).join('');el.value=counts.includes(old)?old:'ALL';el.disabled=!counts.length;}
-function populateSeasons(){let el=$('sitSeason'),v=el.value;let seasons=[...new Set((window.PCBL_VERSUS||[]).map(x=>x.season))].sort((a,b)=>Number(a.slice(1))-Number(b.slice(1)));el.innerHTML='<option value="ALL">ALL TIME</option>'+seasons.map(s=>`<option value="${s}">SEASON ${s.slice(1)}</option>`).join('');el.value=[...el.options].some(o=>o.value===v)?v:'ALL'}
-function tally(entries){const c={PA:entries.length,AB:0,H:0,TB:0,BB:0,HBP:0,K:0,HR:0,'1B':0,'2B':0,'3B':0,OUT:0};for(const x of entries){const r=x.event.result;if(r in c)c[r]++;if(hits.has(r)){c.H++;c.TB+={"1B":1,"2B":2,"3B":3,"HR":4}[r]}if(outs.has(r))c.OUT++;if(r!=='BB'&&r!=='HBP')c.AB++}return c}
+function populateSeasons(){let el=$('sitSeason'),v=el.value;let seasons=[...new Set((window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[]).map(x=>x.season))].sort((a,b)=>Number(a.slice(1))-Number(b.slice(1)));el.innerHTML='<option value="ALL">ALL TIME</option>'+seasons.map(s=>`<option value="${s}">SEASON ${s.slice(1)}</option>`).join('');el.value=[...el.options].some(o=>o.value===v)?v:'ALL'}
+function tally(entries){return window.PCBLPlayDB.count(entries);}
 const rate=(n,d)=>d?(n/d).toFixed(3).replace(/^0\./,'.'):'—';
 function stats(c){let a={PA:c.PA,AB:c.AB,H:c.H,'1B':c['1B'],'2B':c['2B'],'3B':c['3B'],HR:c.HR,BB:c.BB,HBP:c.HBP,K:c.K,AVG:rate(c.H,c.AB),OBP:rate(c.H+c.BB+c.HBP,c.PA),SLG:rate(c.TB,c.AB),OPS:c.AB&&c.PA?( (c.H+c.BB+c.HBP)/c.PA+c.TB/c.AB).toFixed(3).replace(/^0\./,'.'):'—','BB%':c.PA?(100*c.BB/c.PA).toFixed(1)+'%':'—','K%':c.PA?(100*c.K/c.PA).toFixed(1)+'%':'—'};if(side==='pitching')a={BF:c.PA,HA:c.H,HRA:c.HR,'1B A':c['1B'],'2B A':c['2B'],'3B A':c['3B'],BB:c.BB,HBP:c.HBP,K:c.K,OUT:c.OUT,IP:(c.OUT/2).toFixed(1),OAVG:rate(c.H,c.AB),OOBP:rate(c.H+c.BB+c.HBP,c.PA),OSLG:rate(c.TB,c.AB),OOPS:c.AB&&c.PA?((c.H+c.BB+c.HBP)/c.PA+c.TB/c.AB).toFixed(3).replace(/^0\./,'.'):'—','K%':c.PA?(100*c.K/c.PA).toFixed(1)+'%':'—','BB%':c.PA?(100*c.BB/c.PA).toFixed(1)+'%':'—'};return a}
 function label(mask){return mask===null?'UNRESOLVED FROM LOG':mask===0?'BASES EMPTY':[0,1,2].filter(i=>mask&(1<<i)).map(i=>['1B','2B','3B'][i]).join(' + ')}
