@@ -1,0 +1,11 @@
+(() => {
+'use strict';
+const names=['Auden','Jason','Jarvis','Najee'];
+function number(p,side,key){return Number(p?.stats?.[side]?.[key])||0}
+function strength(name){let p=window.PCBL_SNAPSHOT?.S3?.find(x=>x.name===name),live=typeof player==='function'?player(name,'S3'):p;p=live||p;let pa=number(p,'hitting','PA'),ip=number(p,'pitching','IP'),ops=number(p,'hitting','OPS'),era=number(p,'pitching','ERA');let league=typeof leagueAverage==='function'?leagueAverage('S3'):null,baseOPS=league?.h?.OPS||1.1,baseERA=league?.pi?.ERA||5;return .55*(pa/(pa+30))*(ops-baseOPS)/Math.max(.3,baseOPS)+.45*(ip/(ip+6))*(baseERA-era)/Math.max(2,baseERA)}
+function win(a,b){return 1/(1+Math.exp(-2.2*(strength(a)-strength(b))))}
+function final(a,b){let p=win(a,b);return p*p*(3-2*p)}
+function branch(seed1,seed2,weight,out){let semiA=win('Jason',seed1),semiB=win('Auden',seed2);let bracket=[["Jason","Auden",semiA*semiB],["Jason",seed2,semiA*(1-semiB)],[seed1,"Auden",(1-semiA)*semiB],[seed1,seed2,(1-semiA)*(1-semiB)]];for(let [a,b,prob] of bracket){let aWins=final(a,b);out[a]+=weight*prob*aWins;out[b]+=weight*prob*(1-aWins)}}
+function paint(){let out=Object.fromEntries(names.map(n=>[n,0])),p=win('Jarvis','Najee');branch('Jarvis','Najee',p,out);branch('Najee','Jarvis',1-p,out);let rows=names.map(n=>({name:n,odds:out[n],profile:player(n,'S3')})).sort((a,b)=>b.odds-a.odds); document.getElementById('oddsContent').innerHTML='<div class="odds-grid">'+rows.map((r,i)=>'<article class="odds-card" style="--player:'+COLORS[r.name]+'"><small>#'+(i+1)+' / TITLE PROBABILITY</small><h3>'+esc(r.name.toUpperCase())+'</h3><strong>'+Math.round(r.odds*100)+'%</strong><div class="odds-meter"><span style="width:'+(r.odds*100).toFixed(1)+'%"></span></div><small>S3 RECORD '+esc(r.profile?.record||'—')+'</small></article>').join('')+'</div>'+window.PCBLAwardWatch.paint()+'<details class="method"><summary>How these estimates work</summary><p>Season 3 OPS and ERA are pulled toward league rates for small samples (30 PA and 6 IP). A game win chance follows each pair’s combined hitting and pitching difference. Both outcomes of Jarvis vs Najee set seeds 1 and 2; each one-game semifinal is counted; the final uses best-of-three probability p²(3−2p). These are model estimates, not betting lines.</p></details>'}
+window.PCBLOdds={paint};if(location.hash==='#odds')paint();
+})();

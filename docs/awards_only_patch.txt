@@ -1,0 +1,5 @@
+PCBL SAVANT AWARDS-ONLY PATCH
+
+Removed all Film Room integration from Savant.
+Season Awards remain on player pages below the stats tables.
+No Film Room buttons, links, columns, config, or scripts remain in this build.

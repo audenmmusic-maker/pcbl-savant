@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff141">
+  <meta name="description" content="Match MLB and PCBL players using league-relative percentage and rate statistics.">
+  <title>PCBL Player Comparison</title>
+  <link rel="preconnect" href="https://statsapi.mlb.com">
+  <link rel="preconnect" href="https://img.mlbstatic.com">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="PCBL Player Comparison home">
+      <span class="brand-mark">PCBL</span>
+      <span class="brand-copy">PLAYER<br>COMPARISON</span>
+    </a>
+    <div class="live-chip" id="sheetStatus"><span></span> LOADING LIVE STATS</div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="eyebrow">PETER COOPER BLITZBALL LEAGUE</div>
+      <h1>MLB-PCBL<br><em>PLAYER COMPS</em></h1>
+      <p class="hero-copy">Enter any MLB player. We compare percentage-based and rate stats only—never raw totals—against Auden, Jason, Jarvis, Najee and Coel.</p>
+      <aside class="scale-note">
+        <strong>WHY THE STATS LOOK SO DIFFERENT</strong>
+        <p>PCBL's short, 1v1 format produces much heavier offensive and pitching numbers than MLB. This tool focuses only on percentage and rate stats. MLB careers are measured against the MLB career aggregate, while PCBL careers are measured against the live PCBL career aggregate.</p>
+      </aside>
+
+      <form class="finder" id="comparisonForm" novalidate>
+        <div class="search-stage">
+          <label for="playerName">MLB PLAYER</label>
+          <div class="search-row">
+            <input id="playerName" name="playerName" type="search" autocomplete="off" placeholder="e.g. Aaron Judge" required>
+            <button type="submit" id="searchButton">FIND PLAYER</button>
+            <button type="button" id="randomButton" class="random-button">RANDOM</button>
+          </div>
+          <div class="player-options" id="playerOptions" hidden></div>
+        </div>
+
+        <div class="filters">
+          <fieldset>
+            <legend>STAT RANGE</legend>
+            <div class="segmented" id="rangeControl">
+              <input type="radio" id="career" name="range" value="career" checked>
+              <label for="career">CAREER</label>
+              <input type="radio" id="season" name="range" value="season">
+              <label for="season">SEASON</label>
+            </div>
+          </fieldset>
+
+          <label class="select-field season-field" id="seasonField" hidden>
+            <span>SEASON</span>
+            <select id="seasonYear" name="seasonYear"></select>
+          </label>
+
+          <label class="select-field postseason-field">
+            <span>POSTSEASON</span>
+            <select id="postseason" name="postseason">
+              <option value="regular" selected>REGULAR SEASON</option>
+              <option value="combined">INCLUDE POSTSEASON</option>
+              <option value="postseason">POSTSEASON ONLY</option>
+            </select>
+          </label>
+
+          <label class="select-field pcbl-field">
+            <span>PCBL STATS</span>
+            <select id="pcblRange" name="pcblRange">
+              <option value="CAREER" selected>CAREER</option>
+            </select>
+          </label>
+        </div>
+
+        <button class="compare-button" id="compareButton" type="button" disabled>
+          <span>RUN THE COMPARISON</span>
+          <span class="button-arrow">↗</span>
+        </button>
+      </form>
+    </section>
+
+    <section class="loading-panel" id="loadingPanel" hidden aria-live="polite">
+      <div class="loader-ball"></div>
+      <p id="loadingText">READING THE NUMBERS...</p>
+    </section>
+
+    <section class="error-panel" id="errorPanel" hidden aria-live="assertive">
+      <strong>COMPARISON COULDN'T LOAD</strong>
+      <p id="errorText"></p>
+    </section>
+
+    <section class="results" id="results" hidden aria-live="polite">
+      <div class="result-heading">
+        <div>
+          <span class="eyebrow">CLOSEST PCBL MATCH</span>
+          <h2 id="resultTitle">YOUR COMPARISON</h2>
+        </div>
+        <button class="reset-button" id="resetButton" type="button">NEW SEARCH</button>
+      </div>
+
+      <article class="matchup-card" id="matchupCard">
+        <div class="mlb-side person-side">
+          <div class="portrait-wrap mlb-portrait-wrap">
+            <img id="mlbPortrait" alt="" src="">
+            <div class="portrait-fallback" id="mlbFallback">MLB</div>
+          </div>
+          <span class="side-label">MLB PLAYER</span>
+          <h3 id="mlbName"></h3>
+          <p id="mlbMeta"></p>
+        </div>
+
+        <div class="match-center" id="matchCenter">
+          <div id="mainFireworks" hidden></div>
+          <span class="match-label">SIMILARITY</span>
+          <strong id="matchScore">--%</strong>
+          <div class="match-line"><span></span></div>
+          <p id="matchType"></p>
+        </div>
+
+        <div class="pcbl-side person-side">
+          <div class="portrait-wrap">
+            <img id="pcblPortrait" alt="" src="">
+          </div>
+          <span class="side-label">PCBL MATCH</span>
+          <h3 id="pcblName"></h3>
+          <p id="pcblMeta"></p>
+        </div>
+      </article>
+
+      <div class="result-grid">
+        <article class="panel reasons-panel">
+          <div class="panel-title"><span>WHY THEY MATCH</span><span>01</span></div>
+          <div id="matchReasons" class="reason-list"></div>
+        </article>
+
+        <article class="panel metrics-panel">
+          <div class="panel-title"><span>PROFILE COMPARISON</span><span>02</span></div>
+          <div class="metric-key" aria-label="Profile comparison key">
+            <span><i class="key-dot mlb"></i> MLB</span>
+            <span><i class="key-dot pcbl"></i> PCBL</span>
+            <small>CENTER = EACH LEAGUE'S OWN AGGREGATE</small>
+          </div>
+          <div id="metricBars" class="metric-bars"></div>
+        </article>
+      </div>
+
+      <section class="rankings-section">
+        <div class="panel-title"><span>ALL FIVE PCBL COMPARISONS</span><span>03</span></div>
+        <p class="rankings-hint">SELECT ANY PCBL PLAYER TO OPEN THEIR FULL PROFILE COMPARISON.</p>
+        <div class="rankings" id="rankings"></div>
+      </section>
+
+      <div class="result-actions">
+        <a id="baseballReferenceLink" class="external-link" target="_blank" rel="noopener">VIEW PLAYER ON BASEBALL-REFERENCE ↗</a>
+        <button id="shareResult" class="share-button" type="button">COPY RESULT</button>
+      </div>
+    </section>
+
+    <section class="mystery-game" id="mysteryComp">
+      <div class="mystery-intro">
+        <div>
+          <h2>MYSTERY<br><em>COMP</em></h2>
+          <p>An MLB hitter's career profile appears. Pick which of the five PCBL players is its closest statistical match.</p>
+        </div>
+        <button type="button" id="mysteryStart" class="mystery-start">START ROUND <span>↗</span></button>
+      </div>
+      <div class="mystery-loading" id="mysteryStatus" hidden>BUILDING MLB CAREER POOL...</div>
+      <div class="mystery-stage" id="mysteryStage" hidden>
+        <div class="mystery-player">
+          <img id="mysteryPortrait" src="" alt="">
+          <div><span id="mysteryRole"></span><h3 id="mysteryName"></h3><p id="mysteryStats"></p></div>
+        </div>
+        <div class="mystery-prompt">WHO IS THEIR CLOSEST PCBL COMP?</div>
+        <div class="mystery-choices" id="mysteryChoices"></div>
+        <div class="mystery-feedback" id="mysteryFeedback" hidden></div>
+        <button type="button" id="mysteryNext" class="mystery-next" hidden>NEXT PLAYER</button>
+      </div>
+    </section>
+
+    <section class="player-strip" aria-label="PCBL players. Select a player to view career and season statistics.">
+      <button type="button" class="pcbl-player" data-player="AUDEN" style="--player:#f2f2ec"><img src="assets/faces/auden.jpg" alt="Auden"><span>AUDEN</span><small>VIEW PROFILES</small></button>
+      <button type="button" class="pcbl-player" data-player="JASON" style="--player:#ff943d"><img src="assets/faces/jason.jpg" alt="Jason"><span>JASON</span><small>VIEW PROFILES</small></button>
+      <button type="button" class="pcbl-player" data-player="JARVIS" style="--player:#398cff"><img src="assets/faces/jarvis.jpg" alt="Jarvis"><span>JARVIS</span><small>VIEW PROFILES</small></button>
+      <button type="button" class="pcbl-player" data-player="NAJEE" style="--player:#ff414d"><img src="assets/faces/najee.jpg" alt="Najee"><span>NAJEE</span><small>VIEW PROFILES</small></button>
+      <button type="button" class="pcbl-player" data-player="COEL" style="--player:#41d279"><img src="assets/faces/coel.jpg" alt="Coel"><span>COEL</span><small>VIEW PROFILES</small></button>
+    </section>
+  </main>
+
+  <div class="player-modal" id="playerModal" hidden>
+    <button type="button" class="modal-backdrop" id="modalBackdrop" aria-label="Close player statistics"></button>
+    <article class="career-card" id="careerCard" role="dialog" aria-modal="true" aria-labelledby="careerPlayerName">
+      <button type="button" class="modal-close" id="modalClose" aria-label="Close player statistics">×</button>
+      <div class="career-card-head">
+        <img id="careerPlayerFace" src="" alt="">
+        <div>
+          <span id="careerRangeLabel">PCBL CAREER · REGULAR SEASON</span>
+          <h2 id="careerPlayerName"></h2>
+          <p>LIVE FROM THE OFFICIAL STAT SHEET</p>
+        </div>
+      </div>
+      <div class="career-controls">
+        <label><span>PCBL PROFILE</span><select id="careerProfileRange"></select></label>
+        <label><span>MLB MATCH POOL</span><select id="careerPoolFilter"><option value="standard">STANDARD · 300 PA / 50 IP</option><option value="established">ESTABLISHED · 1,000 PA / 200 IP</option></select></label>
+      </div>
+      <div class="career-sections">
+        <section>
+          <h3>HITTING</h3>
+          <div class="career-stats" id="careerHittingStats"></div>
+        </section>
+        <section>
+          <h3>PITCHING</h3>
+          <div class="career-stats" id="careerPitchingStats"></div>
+        </section>
+      </div>
+      <section class="absolute-zone">
+        <div>
+          <span>MLB CAREER COMPS</span>
+          <h3>SEARCH CLOSEST TO 100%</h3>
+          <p id="careerMatchStatus">Scans MLB career rate stats using the same MLB-vs-PCBL aggregate model. If nobody reaches 100%, you get the closest honest score.</p>
+        </div>
+        <button type="button" id="absoluteMatchButton" class="absolute-button">SEARCH</button>
+      </section>
+      <div class="absolute-results" id="absoluteResults" hidden></div>
+    </article>
+  </div>
+
+  <footer>
+    <span>PCBL PLAYER COMPARISON</span>
+    <span>LIVE PCBL DATA · MLB STATS API</span>
+  </footer>
+
+  <script src="pcbl-snapshot.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

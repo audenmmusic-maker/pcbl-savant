@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090b0c">
+  <title>STAT CALCULATOR</title>
+  <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="PCBL to MLB Stat Calculator home">
+      <span class="brand-mark">PCBL</span>
+      <span><b>STAT CALCULATOR</b><small>PCBL → MLB</small></span>
+    </a>
+    <div class="data-status" id="dataStatus"><i></i> LOADING LEAGUE DATA</div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">LEAGUE-ADJUSTED RATE CONVERSION</span>
+        <h1>STAT<br><em>CALCULATOR</em></h1>
+        <p>Enter a PCBL rate and see its MLB equivalent. The calculator measures the stat against the selected PCBL aggregate, then applies that same relative level to the selected MLB season.</p>
+      </div>
+
+      <form class="calculator" id="calculatorForm">
+        <div class="calculator-head">
+          <span>ENTER PCBL STAT</span><span>01</span>
+        </div>
+        <label class="field stat-field">
+          <span>STAT</span>
+          <select id="statSelect">
+            <optgroup label="HITTING">
+              <option value="BA">BATTING AVERAGE (BA)</option>
+              <option value="OBP">ON-BASE PERCENTAGE (OBP)</option>
+              <option value="SLG">SLUGGING PERCENTAGE (SLG)</option>
+              <option value="OPS" selected>ON-BASE PLUS SLUGGING (OPS)</option>
+              <option value="K_RATE">STRIKEOUT RATE (K%)</option>
+            </optgroup>
+            <optgroup label="PITCHING">
+              <option value="ERA">EARNED RUN AVERAGE (ERA)</option>
+              <option value="WHIP">WALKS + HITS PER INNING (WHIP)</option>
+              <option value="KFG">PCBL K/3 → MLB K/9 (×4.5)</option>
+              <option value="BBFG">PCBL BB/3 → MLB BB/9 (×4.5)</option>
+            </optgroup>
+          </select>
+        </label>
+        <label class="field value-field">
+          <span id="valueLabel">PCBL OPS</span>
+          <div><input id="statValue" type="text" inputmode="decimal" autocomplete="off" placeholder="1.000" aria-describedby="inputHint"><b id="inputSuffix"></b></div>
+          <small id="inputHint">Enter the rate as it appears in the PCBL stat sheet.</small>
+        </label>
+        <div class="filter-grid">
+          <label class="field compact">
+            <span>PCBL SAMPLE</span>
+            <select id="pcblRange"></select>
+          </label>
+          <label class="field compact">
+            <span>MLB SEASON</span>
+            <select id="mlbSeason"></select>
+          </label>
+        </div>
+        <button class="calculate-button" id="calculateButton" type="submit"><span>CALCULATE MLB EQUIVALENT</span><b>→</b></button>
+        <p class="form-error" id="formError" hidden></p>
+      </form>
+    </section>
+
+    <section class="result-section" id="resultSection" hidden aria-live="polite">
+      <div class="result-heading">
+        <div><span class="eyebrow">RESULT</span><h2 id="resultTitle">PCBL OPS → MLB OPS</h2></div>
+        <span class="result-number">02</span>
+      </div>
+
+      <div class="conversion-card">
+        <div class="league-value pcbl-value">
+          <span id="pcblResultLabel">PCBL INPUT</span>
+          <strong id="pcblInputValue">1.000</strong>
+          <small id="pcblInputContext">CAREER · REGULAR SEASON</small>
+        </div>
+        <div class="conversion-center">
+          <span id="relativeBadge">+0.0%</span>
+          <i id="conversionModeLabel">LEAGUE RELATIVE</i>
+          <b>→</b>
+        </div>
+        <div class="league-value mlb-value">
+          <span id="mlbResultLabel">MLB EQUIVALENT</span>
+          <strong id="mlbEquivalentValue">.730</strong>
+          <small id="mlbOutputContext">2026 MLB REGULAR SEASON</small>
+        </div>
+        <article class="scale-panel result-scale">
+          <div class="panel-head"><span id="scaleTitle">LEAGUE-RELATIVE SCALE</span><span>03</span></div>
+          <div class="scale-wrap">
+            <div class="scale-labels"><span id="scaleLow">50% OF AVG</span><span id="scaleMiddle">LEAGUE AVG</span><span id="scaleHigh">150% OF AVG</span></div>
+            <div class="scale-track"><i></i><span id="scaleMarker"><b></b><small id="scaleMarkerLabel">INPUT</small></span></div>
+            <p id="resultExplanation"></p>
+          </div>
+        </article>
+      </div>
+
+      <div class="result-actions">
+        <button type="button" id="copyResult">COPY RESULT</button>
+        <button type="button" id="calculateAnother">CALCULATE ANOTHER</button>
+      </div>
+    </section>
+
+    <section class="method-section">
+      <div class="method-title"><span class="eyebrow">THE METHOD</span><h2>SAME LEVEL.<br><em>DIFFERENT LEAGUE.</em></h2></div>
+      <div class="formula"><span>MLB EQUIVALENT</span><strong>=</strong><div><b>PCBL INPUT</b><i>PCBL AVERAGE</i></div><strong>×</strong><b>MLB AVERAGE</b></div>
+      <p>This translates rate statistics—not raw totals or projected MLB performance. BA, OBP, SLG, OPS, K%, ERA and WHIP use league-relative aggregates. K/3 and BB/3 use a direct ×4.5 full-game conversion because a PCBL game has 6 outs and an MLB game has 27.</p>
+    </section>
+  </main>
+
+  <footer><span>STAT CALCULATOR</span><span>LIVE PCBL SHEET · MLB STATS API</span></footer>
+  <script src="pcbl-snapshot.js?v=3"></script>
+  <script src="app.js?v=3"></script>
+</body>
+</html>

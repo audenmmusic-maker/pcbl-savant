@@ -1,0 +1,12 @@
+PCBL ADVANCED PITCHING NOTES
+
+Displayed advanced pitching metrics:
+- ERA+
+- FIP / FIP+
+- SIERA (PCBL-calibrated estimate)
+- K%, BB%, K-BB%, HBP%, HR%
+- OPP AVG, OPP OBP, OPP SLG, OPP OPS, OPP ISO
+
+Batted-ball profile percentages (GB%, FB%, LD%, PU%, GB/FB, BIP Coverage) are intentionally NOT displayed. The game logs classify many outs as GO/FO/LO/PO, but hit trajectories are not consistently logged, so a public batted-ball profile would not represent every ball in play.
+
+Classified out types may still be used internally as one input to the PCBL-calibrated SIERA estimate. SIERA should therefore be read as an estimate, not Statcast-level batted-ball measurement.

@@ -1,0 +1,17 @@
+PCBL SAVANT — ADDING A FIELD TO A FUTURE GAME
+
+On a game’s page in the existing season game-log Google Doc, type the field name anywhere between that game's GAME ... LOG heading and the next game heading:
+
+PCBL HOME FIELD
+MURPHY PARK
+POLO RINK
+
+One field name anywhere on the page assigns the whole game to that field. You do not need to edit a script or add a special tag. The live log endpoint already sends the complete page text, so Savant can detect the field when it refreshes. The same game-log endpoint feeds both game events and field assignments; no second link or script deployment is needed. Savant checks on page load and refreshes every fifteen minutes while it stays open.
+
+If the game changes fields, write the starting field somewhere before the first switch, then add a separate line immediately after the LAST PLAY at the old field:
+
+PARK SWITCH: POLO RINK
+
+Any later switch can use PARK SWITCH: MURPHY PARK, etc. Keep the switch line between play lines; if several results are on one line, move the switch between lines or the precise boundary cannot be resolved from the log. If a field changes mid-count, the completed plate appearance belongs to the field where its result happened. Individual pitch locations require pitch timestamps and are not inferred from the plate appearance log.
+
+The existing stadium document remains the verified snapshot for games without live field names. If a page names two fields without an explicit switch marker, Savant keeps the verified snapshot and warns in the console rather than assigning that game's plays to the wrong park. Missing initial fields stay unassigned.
