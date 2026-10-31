@@ -5,6 +5,8 @@ on:
       - '.github/workflows/pcbl-source-audit.yml'
       - 'scripts/pcbl-source-audit.cjs'
       - 'public/live-log-parser.js'
+  schedule:
+    - cron: '23 */6 * * *'
   workflow_dispatch:
 permissions:
   contents: read

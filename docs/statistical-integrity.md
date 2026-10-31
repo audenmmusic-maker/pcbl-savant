@@ -28,3 +28,15 @@ Do not claim season-source statistical completeness merely because a game log wa
 
 ## Testing
 Run: node --test tests/play-database.test.cjs tests/season-source-map.test.cjs tests/postseason-records.test.cjs tests/situational-audit.test.cjs.
+
+## Unified site-wide data and automated refresh (Oct 31, 2026)
+- Source resolver: `public/unified-data.js`. Player profiles, leaderboards, statistical databases, graphs, and the embedded MLB tools consume its same official regular-season/postseason profiles or clearly identified event-only splits.
+- W–L records everywhere come from `record-store.js`: official regular-season sheet, official S1/S2 postseason summaries, then verified game scores. Historical missing finals stay unavailable.
+- The official Google Sheets JSONP source is refreshed on page load, approximately every **five minutes while the site is open**, and when the tab becomes active or the device reconnects. Game logs follow the same refresh cadence via the verified Apps Script bridge. No code commit or Cloudflare redeployment is needed to display changed source data.
+- Each update runs validation before adoption. Bad feeds retain the last good snapshot; the site displays source coverage and full reconciliation through the **Data Integrity** panel. A change not reflected in the official source is not silently invented.
+- A read-only GitHub Actions audit additionally checks the Google Docs game-log bridge every six hours; CI checks code and the historical consistency regression tests on commits.
+- The embedded calculators use the parent Savant's current normalized data if opened inside the site. They preserve a direct standalone Google Sheet fallback when used outside Savant.
+- The last source-audit read of the live Docs bridge exposed **S1/S2/S3 tabs only**. If S4/S5 game logs are kept elsewhere or the bridge hasn't been updated, new S4/S5 *situational* splits remain unavailable until those sources are connected. This does not prevent the official S4/S5 season totals from being displayed when their Sheets sources are connected.
+- If S4 and S5 are separate spreadsheet tabs or files, set the real spreadsheet IDs and `gid` in `public/season-source-config.js`. Empty entries are deliberately not considered connected. The main `gid=0` sheet is discovered automatically for season sections appended within it.
+- Existing official S3 Auden and other archived discrepancies remain flagged for review. The site does **not** apply the unverified Game 6 duplicate hypothesis to remove official statistics.
+

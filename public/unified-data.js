@@ -48,6 +48,32 @@ function sumSeason(name,phase){
  }
  return {name,season:'ALL TIME',stats,source:'DERIVED FROM AVAILABLE OFFICIAL SEASONS',partial:parts.length<seasons().filter(s=>(phase==='postseason'?postseason():official())[s]?.length).length};
 }
+function combineProfiles(reg,post){
+ const parts=[reg,post].filter(Boolean);
+ if(!parts.length)return null;
+ const stats={hitting:{},pitching:{},overall:{}};
+ for(const [side,keys] of [['hitting',countingH],['pitching',countingP]])
+  for(const key of keys){
+   const values=parts.map(p=>p.stats?.[side]?.[key]).filter(numeric);
+   if(values.length===parts.length)stats[side][key]=values.reduce((a,b)=>a+b,0);
+  }
+ const h=stats.hitting,p=stats.pitching;
+ if(h.AB>0&&numeric(h.H))h.AVG=h.H/h.AB;
+ if(h.PA>0&&[h.H,h.BB,h.HBP].every(numeric))h.OBP=(h.H+h.BB+h.HBP)/h.PA;
+ if(h.AB>0&&['H','2B','3B','HR'].every(k=>numeric(h[k])))h.SLG=(h.H+h['2B']+2*h['3B']+3*h.HR)/h.AB;
+ if(numeric(h.OBP)&&numeric(h.SLG))h.OPS=h.OBP+h.SLG;
+ if(numeric(h.SLG)&&numeric(h.AVG))h.ISO=h.SLG-h.AVG;
+ if(h.HR>0&&numeric(h.AB))h['AB/HR']=h.AB/h.HR;
+ if(['2B','3B','HR'].every(k=>numeric(h[k])))h.XBH=h['2B']+h['3B']+h.HR;
+ if(p.IP>0){
+  for(const key of ['ERA','WHIP']){
+   const entries=parts.map(x=>({w:x.stats?.pitching?.IP,v:x.stats?.pitching?.[key]}));
+   if(entries.every(x=>numeric(x.w)&&x.w>=0&&numeric(x.v)))p[key]=entries.reduce((sum,x)=>sum+x.w*x.v,0)/p.IP;
+  }
+  if(numeric(p.K))p['K/3']=p.K*3/p.IP;
+ }
+ return {stats};
+}
 function officialProfile(name,season,phase){
  if(season!=='ALL TIME')return source(name,season,phase);
  const career=source(name,'ALL TIME',phase),derived=sumSeason(name,phase);
@@ -63,6 +89,17 @@ function profile(name,season='ALL TIME',phase='regular',park='ALL'){
  const record=root.PCBLRecordStore?.get(name,season,phase,park);
  let p=park==='ALL'&&phase!=='both'?officialProfile(name,season,phase):null;
  let sourceType=p?'OFFICIAL '+(phase==='postseason'?'POSTSEASON':'REGULAR')+' SHEET':null;
+ if(park==='ALL'&&phase==='both'){
+  const regular=officialProfile(name,season,'regular');
+  const officialPost=officialProfile(name,season,'postseason');
+  const loggedPost=!officialPost?root.PCBLParkStats?.profile(name,season,'ALL','postseason'):null;
+  const playoff=officialPost||(loggedPost?.games?loggedPost:null);
+  if(regular||playoff){
+   p=combineProfiles(regular,playoff);
+   sourceType=playoff?(officialPost?'COMBINED OFFICIAL SHEET':'OFFICIAL REGULAR + POSTSEASON LOG SAMPLE'):'OFFICIAL REGULAR · POSTSEASON TOTALS UNAVAILABLE';
+   p.partial=!officialPost&&!!root.PCBLRecordStore?.hasGames(name,season,'postseason','ALL');
+  }
+ }
  if(!p){
   const eventProfile=root.PCBLParkStats?.profile(name,season,park,phase);
   if(eventProfile?.games){p=eventProfile;sourceType='RECORDED GAME EVENTS';}

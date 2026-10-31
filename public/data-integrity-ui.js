@@ -15,7 +15,7 @@ function render(){
  const alert=problems.length+' SOURCE DIFFERENCES UNDER REVIEW';
  const update=audit.updatedAt?new Date(audit.updatedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'SAVED ARCHIVE';
  const present=['S4','S5'].filter(available);
- const lastScroll=document.activeElement?.id==='pcblIntegrityDetails'&&document.activeElement;
+ const previousOpen=!!el.querySelector('#pcblIntegrityDetails')?.open;
  el.innerHTML='<div class="pcbl-integrity-heading"><strong>DATA INTEGRITY</strong><span>'+escape(alert)+' · LAST SYNC '+escape(update)+'</span><button type="button" id="pcblRefreshNow">↻ REFRESH DATA</button></div>'+
  '<details id="pcblIntegrityDetails"><summary>VIEW SOURCE RECONCILIATION & SEASON COVERAGE</summary>'+
  '<p>Official statistics remain the published season totals; advanced splits use separately verified logged plays. No events or historical stats are fabricated to force agreement.</p>'+
@@ -27,7 +27,7 @@ function render(){
  (lines||'<tr><td colspan="4">No mismatches in the currently available seasons.</td></tr>')+
  '</tbody></table></details>';
  el.querySelector('#pcblRefreshNow').onclick=()=>window.PCBLRefreshAllData?.();
- if(lastScroll)el.querySelector('#pcblIntegrityDetails')?.focus();
+ el.querySelector('#pcblIntegrityDetails').open=previousOpen;
 }
 window.PCBLIntegrityUI={render};
 window.addEventListener('pcbl-data-updated',render);

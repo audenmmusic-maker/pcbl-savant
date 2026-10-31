@@ -13,6 +13,7 @@ const unified=load('unified-data.js');root.PCBLUnified=unified;
 let official=structuredClone(original),post={};unified.configure({getOfficial:()=>official,getPostseason:()=>post});root.PCBLRecordStore.setOfficialProvider(()=>official);
 test('season totals remain official while logged splits are separate',()=>{
  assert.equal(unified.profile('Auden','S3').stats.hitting.PA,109);
+ assert.equal(unified.profile('Auden','S3','both').stats.hitting.PA,109);
  assert.equal(root.PCBLPlayDB.count(root.PCBLPlayDB.events({season:'S3',player:'Auden',phase:'regular'})).PA,92);
  assert.equal(unified.profile('Auden','S3').record,'2-4');
  assert.equal(unified.report().regular.rows.find(x=>x.season==='S3'&&x.player==='Auden').status,'SHEET_ARITHMETIC');
@@ -34,6 +35,7 @@ test('official S4/S5 additions are included without changing archived S3',()=>{
  assert.deepEqual(unified.seasons().slice(-2),['S4','S5']);
  assert.equal(unified.profile('Auden','S4').stats.hitting.PA,12);
  assert.equal(unified.profile('Auden','S4','postseason').stats.hitting.PA,4);
+ assert.equal(unified.profile('Auden','S4','both').stats.hitting.PA,16);
  assert.equal(unified.profile('Auden','S3').stats.hitting.PA,109);
  assert.equal(unified.profile('Auden','ALL TIME').stats.hitting.PA,287);
  assert.equal(unified.profile('Auden','S4','postseason').record,'1-0');
