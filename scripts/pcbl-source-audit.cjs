@@ -25,7 +25,7 @@ async function run(){
    if(!old||old.events.length!==live.events.length||diffs.length){
     console.log(live.id,'total',old?.events.length??'missing','->',live.events.length,'batters',diffs.join(' '));
     const first=live.events.findIndex((e,i)=>!old?.events[i]||e.result!==old.events[i].result||e.batter!==old.events[i].batter||e.inning!==old.events[i].inning||e.half!==old.events[i].half);
-    if(first>=0)console.log(' first divergent event index',first+1,'source paragraph',live.events[first]?.sourceParagraph??'unknown');
+    if(first>=0){const paragraph=live.events[first]?.sourceParagraph;console.log(' first divergent event index',first+1,'source paragraph',paragraph??'unknown');if(live.id==='S3:regular:2'){console.log(' source context:');for(const x of (tab.lines||[]).filter(x=>Math.abs(Number(x.paragraph)-paragraph)<=3))console.log('  paragraph',x.paragraph,JSON.stringify(String(x.text).slice(0,400)));console.log(' last old events:',old.events.slice(-9).map(e=>[e.id,e.batter,e.half,e.inning,e.result,e.sourceParagraph]));console.log(' last live events:',live.events.slice(-9).map(e=>[e.id,e.batter,e.half,e.inning,e.result,e.sourceParagraph]));}}
    }
   }
   if(parsed.issues.length)console.log('First parsing issues:',parsed.issues.slice(0,4));
