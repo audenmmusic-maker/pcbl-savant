@@ -12,6 +12,37 @@ function validateLabel(label,g,side){if(!label)return;const sections=label.toUpp
 function parseTab(tab,snapshot){const lines=(tab.lines||[]).flatMap((source,i)=>String(source.text??source).split(/\r\n|\r|\n/).map(text=>({text,paragraph:source.paragraph||i+1})));const first=lines.find(x=>x.text.trim());const seasonMatch=String(first?.text||'').match(/^SEASON\s*([1-9]\d*)\b/i)||String(tab.title||'').match(/^SEASON\s*([1-9]\d*)\b/i);if(!seasonMatch)throw Error('Tab does not start with a season heading: '+(tab.title||''));const season='S'+seasonMatch[1],existing=new Map(snapshot.filter(g=>g.season===season).map(g=>[g.id,g])),found=new Set(),games=[],issues=[];let current=null,position=null,inningHint=1;
 for(let index=0;index<lines.length;index++){const source=lines[index];let line=source.text.trim();const paragraph=source.paragraph;const h=line.match(head);if(h){const stage=h[1].toUpperCase()==='REGULAR SEASON'?'regular':h[1].toUpperCase()==='WILD CARD'?'wild_card':'championship',number=Number(h[2]||1),id=`${season}:${stage}:${number}`;if(found.has(id))throw Error('Duplicate game header: '+id);found.add(id);current=null;position=null;inningHint=1;const old=existing.get(id);let tokens=h[3].split(/\s+v\s+/i);if(tokens.length!==2){const scored=h[3].match(/^([A-Z]+)\s+\d+\s*-\s*\d+\s+([A-Z]+)$/i);if(scored)tokens=[scored[1],scored[2]];}let top=old?.top,bottom=old?.bottom;try{if(!old){if(tokens.length!==2)throw Error('Use NAME v NAME in the game heading');top=identify(tokens[0],season,null);bottom=identify(tokens[1],season,top);top=identify(tokens[0],season,bottom);if(!top||!bottom||top===bottom)throw Error('Ambiguous player initials in game heading');}else if(tokens.length===2){const explicitTop=identify(tokens[0],season,bottom),explicitBottom=identify(tokens[1],season,top);if(explicitTop&&explicitTop!==top||explicitBottom&&explicitBottom!==bottom)throw Error('Game heading conflicts with known players');}const score=h[3].match(/\b(\d+)\s*-\s*(\d+)\b/);current={id,season,phase:stage==='regular'?'regular':'postseason',stage,number,title:line,top,bottom,score:score?[Number(score[1]),Number(score[2])]:old?.score||null,events:[]};games.push(current);}catch(e){issues.push(id+': '+e.message);}continue;}
 if(!current)continue;
+if(/^RUNS\s+BY\s+INNING\s*:/i.test(line)){
+ try{
+  const value=line.slice(line.indexOf(':')+1),sides={};
+  const entries=value.split(/\s*;\s*/).map(x=>x.trim()).filter(Boolean);
+  for(const entry of entries){
+   const m=entry.match(/^(TOP|BOTTOM|BOT)\s*=\s*([0-9]+(?:\s*,\s*[0-9]+)*)$/i);
+   if(!m)throw Error('Use TOP=1,0,2; BOTTOM=0,1,1');
+   const side=/^TOP$/i.test(m[1])?'top':'bottom';
+   if(sides[side])throw Error('Duplicate '+side+' runs');
+   sides[side]=m[2].split(/\s*,\s*/).map(Number);
+  }
+  if(!sides.top||!sides.bottom)throw Error('Both TOP and BOTTOM runs are required');
+  current.runsByInning=sides;
+ }catch(e){issues.push(current.id+': invalid runs-by-inning annotation: '+e.message);}
+ continue;
+}
+if(/^PITCHING\s+OUTS\s*:/i.test(line)){
+ try{
+  const parts=line.slice(line.indexOf(':')+1).split(/\s*;\s*/).map(x=>x.trim()).filter(Boolean),outs={};
+  for(const part of parts){
+   const m=part.match(/^([A-Za-z]+)\s*=\s*(\d+)$/);
+   if(!m)throw Error('Use AUDEN=6; JARVIS=6');
+   const p=identify(m[1],season,null);
+   if(!p)throw Error('Use full unambiguous player names');
+   if(p in outs)throw Error('Duplicate pitcher '+p);
+   outs[p]=Number(m[2]);
+  }
+  current.pitcherOuts=outs;
+ }catch(e){issues.push(current.id+': invalid pitching-outs annotation: '+e.message);}
+ continue;
+}
 const marker=season==='S1'&&line.match(/^([123])(?:st|nd|rd)\s*:?\s*$/i);if(marker){inningHint=Number(marker[1]);position=null;continue;}
 const special=season==='S1'&&line.match(/^(Top|Bottom)\s+(A|C|JM|JD|JARVIS|JASON)\s*:\s*(.*)$/i);
 const m=line.match(half);

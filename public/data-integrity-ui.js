@@ -12,7 +12,9 @@ function render(){
  const problems=audit.regular.rows.filter(r=>r.status!=='MATCH');
  const visible=problems.slice(0,40);
  const lines=visible.map(r=>'<tr><th>'+escape(r.season+' '+r.player)+'</th><td>'+escape(r.status.replaceAll('_',' '))+'</td><td>'+escape(r.officialPA??'—')+'</td><td>'+escape(r.loggedPA)+'</td></tr>').join('');
- const alert='OFFICIAL TOTALS · LOG-BASED SPLITS';
+ const complete=(window.PCBLFutureStats?.diagnostics(hub.official())||[]).filter(x=>x.authoritative);
+ const pending=(window.PCBLFutureStats?.diagnostics(hub.official())||[]).filter(x=>!x.authoritative);
+ const alert=(complete.length?complete.length+' FUTURE PLAYER-SEASONS FROM GAME LOGS · ':'')+'OFFICIAL TOTALS + LOGGED SPLITS';
  const update=audit.updatedAt?new Date(audit.updatedAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'SAVED ARCHIVE';
  const present=['S4','S5'].filter(available);
  const previousOpen=!!el.querySelector('#pcblIntegrityDetails')?.open;
@@ -22,7 +24,7 @@ function render(){
  '<p>LIVE OFFICIAL SEASONS: '+escape(present.join(', ')||'S4/S5 NOT YET CONNECTED')+
  (missing.length?' · MISSING: '+escape(missing.join(', ')):'')+
  ' · POSTSEASON SHEET SEASONS: '+escape(Object.keys(post).filter(s=>Array.isArray(post[s])&&post[s].length).join(', ')||'NONE READABLE')+
- ' · GAME LOG SEASONS: '+escape((window.PCBLPlayDB?.seasons()||[]).join(', '))+'</p>'+
+ ' · GAME LOG SEASONS: '+escape((window.PCBLPlayDB?.seasons()||[]).join(', '))+' · FUTURE LOG RECORDS PENDING REVIEW: '+pending.length+'</p>'+
  '<table><thead><tr><th>PLAYER / SEASON</th><th>RECONCILIATION</th><th>OFFICIAL PA</th><th>LOGGED PA</th></tr></thead><tbody>'+
  (lines||'<tr><td colspan="4">No mismatches in the currently available seasons.</td></tr>')+
  '</tbody></table></details>';

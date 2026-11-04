@@ -15,4 +15,4 @@ jobs:
       - name: Parse-check all deployed JavaScript
         run: find public -name '*.js' -print0 | xargs -0 -n1 node --check
       - name: Verify canonical plays, season mappings and postseason
-        run: node --test tests/play-database.test.cjs tests/season-source-map.test.cjs tests/postseason-records.test.cjs tests/situational-audit.test.cjs tests/live-log-parser.test.cjs tests/unified-data.test.cjs tests/database-source-labels.test.cjs tests/approved-corrections.test.cjs
+        run: node --test tests/play-database.test.cjs tests/season-source-map.test.cjs tests/postseason-records.test.cjs tests/situational-audit.test.cjs tests/live-log-parser.test.cjs tests/unified-data.test.cjs tests/database-source-labels.test.cjs tests/approved-corrections.test.cjs tests/future-stats.test.cjs tests/future-integration.test.cjs
