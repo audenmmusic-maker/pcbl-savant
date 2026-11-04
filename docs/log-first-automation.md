@@ -29,7 +29,7 @@ Illustrative example (**not a real PCBL game**):
     RUNS BY INNING: TOP=1,0,2; BOTTOM=1,0,1
     PITCHING OUTS: AUDEN=6; JARVIS=6
 
-Top and bottom in the **score in the game header** must be in the same order as top and bottom in the play log. Use full player names to eliminate initials ambiguity. Game numbers must be unique for each season/stage.
+Top and bottom in the **score in the game header** must be in the same order as top and bottom in the play log. Use full player names to eliminate initials ambiguity. The game header must include both players and the final score in parentheses. A bare `REGULAR SEASON GAME 1 LOG` heading is not enough to assign the teams or calculate the record. For example: `REGULAR SEASON GAME 1 LOG (AUDEN 3-2 JARVIS)`. Game numbers must be unique for each season/stage.
 
 ## Two essential annotation lines
 

@@ -19,3 +19,14 @@ test('Google Docs embedded CR-only inning labels change batting half',()=>{
  assert.deepEqual(events.map(e=>e.result),['BB','K','GO','1B','BB','K']);
  assert.equal(events[2].sourceParagraph,5);
 });
+
+
+test('new game heading without player names and score is explicitly rejected',()=>{
+ const parsed=parser.parseTab({title:'SEASON 4',lines:[
+  {paragraph:1,text:'SEASON 4'},
+  {paragraph:2,text:'REGULAR SEASON GAME 1 LOG'}
+ ]},[]);
+ assert.equal(parsed.games.length,0);
+ assert.equal(parsed.issues.length,1);
+ assert.match(parsed.issues[0],/player names and final score/i);
+});

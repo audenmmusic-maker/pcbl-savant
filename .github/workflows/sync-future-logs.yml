@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/sync-future-logs.yml'
       - 'scripts/sync-future-logs.cjs'
+      - 'public/live-log-parser.js'
   workflow_dispatch:
 permissions:
   contents: write
