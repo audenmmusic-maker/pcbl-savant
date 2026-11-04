@@ -1,0 +1,15 @@
+name: Verify corrected PCBL sheet
+on:
+  push:
+    paths:
+      - '.github/workflows/verify-official-sheet.yml'
+      - 'scripts/verify-official-sheet.cjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node scripts/verify-official-sheet.cjs
