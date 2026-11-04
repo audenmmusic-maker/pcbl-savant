@@ -58,3 +58,23 @@ test('season without a sheet can publish complete game-log statistics',()=>{
  assert.equal(actual.S5.find(p=>p.name==='Auden').stats.hitting.PA,8);
  assert.equal(actual.S5.find(p=>p.name==='Jarvis').stats.pitching.ERA,3);
 });
+
+
+test('verified game logs replace computed fields but retain unsupported official metadata',()=>{
+ const one=game(1),two=game(2);
+ assert.equal(context.PCBLPlayDB.replace([one,two]).ok,true);
+ const base={S5:[{name:'Auden',record:'2-0',award:'PCBL MVP',stats:{
+  hitting:{PA:100,AB:90,BA:.4,customMetric:7},
+  pitching:{IP:8,'NO HITTERS':2,customPitching:5},
+  overall:{championships:1}
+ }}]};
+ const actual=context.PCBLFutureStats.merge(base,'regular');
+ const a=actual.S5.find(p=>p.name==='Auden');
+ assert.equal(a.stats.hitting.PA,16);
+ assert.equal(a.stats.hitting.customMetric,7);
+ assert.equal(a.stats.pitching.IP,6);
+ assert.equal(a.stats.pitching['NO HITTERS'],2);
+ assert.equal(a.stats.pitching.customPitching,5);
+ assert.equal(a.stats.overall.championships,1);
+ assert.equal(a.award,'PCBL MVP');
+});

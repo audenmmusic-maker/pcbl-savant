@@ -128,7 +128,15 @@ function merge(base,phase){
   let applied=0;
   for(const p of result.players){
    const existing=merged.get(p.name);
-   if(readyToReplace(p,existing,result)){merged.set(p.name,p);applied++;}
+   if(readyToReplace(p,existing,result)){
+    merged.set(p.name,{...existing,...p,stats:{
+     ...(existing?.stats||{}),...(p.stats||{}),
+     hitting:{...(existing?.stats?.hitting||{}),...(p.stats?.hitting||{})},
+     pitching:{...(existing?.stats?.pitching||{}),...(p.stats?.pitching||{})},
+     overall:{...(existing?.stats?.overall||{}),...(p.stats?.overall||{})}
+    }});
+    applied++;
+   }
   }
   if(applied)src[season]=[...merged.values()];
  }
