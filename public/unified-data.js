@@ -88,7 +88,7 @@ function officialProfile(name,season,phase){
 function profile(name,season='ALL TIME',phase='regular',park='ALL'){
  const record=root.PCBLRecordStore?.get(name,season,phase,park);
  let p=park==='ALL'&&phase!=='both'?officialProfile(name,season,phase):null;
- let sourceType=p?'OFFICIAL '+(phase==='postseason'?'POSTSEASON':'REGULAR')+' SHEET':null;
+ let sourceType=p?(p.correction?'APPROVED HISTORICAL CORRECTION':'OFFICIAL '+(phase==='postseason'?'POSTSEASON':'REGULAR')+' SHEET'):null;
  if(park==='ALL'&&phase==='both'){
   const regular=officialProfile(name,season,'regular');
   const officialPost=officialProfile(name,season,'postseason');

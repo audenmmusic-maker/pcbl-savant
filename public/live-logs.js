@@ -8,7 +8,7 @@
   if(!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec(?:\?.*)?$/.test(url)){
     show('LOG SYNC SETUP ERROR · USING SNAPSHOT');return;
   }
-  const initial=window.PCBL_VERSUS||[];
+  const initial=window.PCBLPlayDB?.games()||window.PCBL_VERSUS||[];
   const LOG_REFRESH_MS=300000;
   let current=null,timer=null,refresh=null,live=false,lastAttempt=0;
   function schedule(ms){clearTimeout(refresh);refresh=setTimeout(load,ms)}
@@ -19,16 +19,18 @@
     try{
       const result=window.PCBLLogParser.merge(payload,window.PCBL_VERSUS||initial);
       if(!result.updatedSeasons.length)throw Error('Missing season tabs');
-      const check=window.PCBLPlayDB.replace(result.games,'live game logs');
+      const protectedS3=window.PCBLApprovedCorrections?.lockGames(result.games,initial)||{ok:true,games:result.games};
+      if(!protectedS3.ok)throw Error('Cannot retain approved S3 historical games: '+protectedS3.reason);
+      const check=window.PCBLPlayDB.replace(protectedS3.games,'live game logs (approved S3 Auden history locked)');
             if(!check.ok)throw Error('Game log validation failed: '+check.issues.join('; '));
             const parkSync=window.PCBLParkData?.acceptTabs(payload.tabs,window.PCBLPlayDB.games())||{updated:0,issues:[]};
             window.PCBL_VERSUS=window.PCBLPlayDB.games();
       window.PCBL_PARK_SYNC={liveParks:parkSync.updated,parkIssues:parkSync.issues,gameIssues:result.issues,updatedAt:new Date().toISOString()};
       live=true;
       finish(request);
-      const issues=result.issues.length+parkSync.issues.length+(accepted.drift?.length||0);
-      const mapped=result.games.filter(g=>window.PCBLParkData?.gameParks(g).length).length;show('LIVE GAME LOGS · '+mapped+' GAME'+(mapped===1?'':'S')+' WITH VERIFIED PARKS · '+parkSync.updated+' FROM GAME PAGES · '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+(issues?' · '+issues+' NEED REVIEW':''));
-      if(issues)console.warn('PCBL game and park review:',result.issues,parkSync.issues,'Changed game event counts:',accepted.drift);
+      const issues=result.issues.length+parkSync.issues.length+(check.drift?.length||0);
+      const mapped=protectedS3.games.filter(g=>window.PCBLParkData?.gameParks(g).length).length;show('LIVE GAME LOGS · '+mapped+' GAME'+(mapped===1?'':'S')+' WITH VERIFIED PARKS · '+parkSync.updated+' FROM GAME PAGES · '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+(issues?' · '+issues+' NEED REVIEW':''));
+      if(issues)console.warn('PCBL game and park review:',result.issues,parkSync.issues,'Changed game event counts:',check.drift);
       window.dispatchEvent(new Event('pcbl-logs-updated'));
       schedule(LOG_REFRESH_MS);
     }catch(e){console.warn('PCBL live game and park update rejected:',e);failure(request,'INVALID')}

@@ -20,6 +20,7 @@ function lowerBetter(side,key){if(side==='pitching'&&window.PCBLPitchingAdvanced
 window.PCBLGetOfficialSeasonStats=()=>data;
 const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let menuExpanded=false,missingCells=[],data=window.PCBL_SNAPSHOT,postseasonData={},season='S3',view='home',playerTab='stats',differencePair='S1:S2',category='hitting',stat='OPS',comparePicks=[{name:'Auden',season:'S3'},{name:'Jarvis',season:'S3'}],graphDots=[],ripples=[],pointer=null,chartRAF=0,lastRipple=0;
+window.PCBLApprovedCorrections?.apply(data);
 window.PCBLPitchingAdvanced?.setOfficialProvider?.(()=>data);
 window.PCBLRecordStore?.setOfficialProvider?.(()=>data);
 window.PCBLUnified?.configure({getOfficial:()=>data,getPostseason:()=>postseasonData});
@@ -103,10 +104,12 @@ function PCBLLiveSheet(response){
   if(response.status!=='ok'||!response.table?.rows)throw Error('Sheet unavailable');
   const rows=response.table.rows.map(row=>(row.c||[]).map(cell=>cell==null?'':String(cell.f??cell.v??'')));
   const regular=parseSheet(rows),playoffs=parseSheet(rows,POST_COLUMNS,'postseason');
+  window.PCBLApprovedCorrections?.apply(regular);
   if(!Object.values(regular).some(a=>a.length))throw Error('No populated seasons');
   const review=window.PCBLUnified?.validate(regular,'regular');
   if(review&&!review.ok)throw Error('Malformed official data: '+review.problems.slice(0,2).join('; '));
   data={...data,...regular};postseasonData={...postseasonData,...playoffs};
+  window.PCBLApprovedCorrections?.apply(data);
   syncSeasonOptions();
   $('sourceStatus').textContent='LIVE SHEET · VALIDATING';
   refreshMixedCells().catch(e=>{console.warn('PCBL partial sheet cells unavailable',e);publishDataUpdate('LIVE SHEET · SOME CELLS UNAVAILABLE');});
@@ -115,6 +118,7 @@ function PCBLLiveSheet(response){
 }
 function fetchCell(item,index){return new Promise(resolve=>{let callback='PCBLCell'+index+'_'+Date.now(),script=document.createElement('script'),timer=setTimeout(()=>finish(false),9000),settled=false;function finish(ok){if(settled)return;settled=true;clearTimeout(timer);delete window[callback];script.remove();resolve(ok)}window[callback]=response=>{let cell=response.table?.rows?.[0]?.c?.[0],raw=String(cell?.f??cell?.v??''),match=raw.trim().match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+))/);if(response.status==='ok'){let target=data[item.code]?.find(p=>p.name===item.name)?.stats[item.side];if(target){if(match)target[item.key]=Number(match[1]);else delete target[item.key]}finish(true)}else finish(false)};script.onerror=()=>finish(false);script.src='https://docs.google.com/spreadsheets/d/1-wyh_XRSgYGF8GIynNH1ZYvm__1bf0m7bs0WNNWRmuk/gviz/tq?gid=0&range='+item.range+'&tqx='+encodeURIComponent('out:json;responseHandler:'+callback)+'&_='+Date.now();document.head.appendChild(script)})}
 function publishDataUpdate(label='LIVE SHEET · SYNCED'){
+ window.PCBLApprovedCorrections?.apply(data);
  window.PCBLUnified?.signal('official');
  window.dispatchEvent(new Event('pcbl-official-stats-updated'));
  const conflicts=window.PCBLUnified?.report()?.regular?.disagreements||0;
