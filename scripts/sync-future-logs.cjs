@@ -35,6 +35,14 @@ async function run(){
  const raw=reply.slice(begin+'PCBLReceiveLogTabs('.length).trim().replace(/\);?\s*$/,'');
  const payload=JSON.parse(raw);
  if(!Array.isArray(payload.tabs))throw Error('Bridge did not include season tabs');
+ const tabAudit=payload.tabs.filter(t=>/^SEASON\s*[45]\b/i.test(t.title||'')).map(tab=>{
+  const lines=(tab.lines||[]).map(x=>String(x.text??x).trim()).filter(Boolean);
+  let parsed;try{parsed=parser.parseTab(tab,[...archive,...saved]);}catch(e){parsed={games:[],issues:[String(e.message)]};}
+  return {title:tab.title,lineCount:(tab.lines||[]).length,nonEmpty:lines.length,
+   preview:lines.slice(0,12),gameHeadings:lines.filter(x=>/\bGAME\b|\bLOG\b/i.test(x)).slice(0,20),
+   parsedGames:parsed.games.map(g=>({id:g.id,top:g.top,bottom:g.bottom,score:g.score,events:g.events.length})),parseIssues:parsed.issues};
+ });
+ console.log('S4/S5 source-tab audit:',JSON.stringify(tabAudit));
  const merged=parser.merge(payload,[...archive,...saved]),byId=new Map(saved.map(g=>[g.id,g]));
  const incoming=merged.games.filter(g=>/^S([4-9]|[1-9]\d{1,})$/.test(g.season));
  const problems=[];
