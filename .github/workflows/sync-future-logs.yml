@@ -1,0 +1,35 @@
+name: Sync verified future PCBL game logs
+on:
+  schedule:
+    - cron: '11,41 * * * *'
+  push:
+    paths:
+      - '.github/workflows/sync-future-logs.yml'
+      - 'scripts/sync-future-logs.cjs'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: pcbl-future-log-archive
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Pull and validate official game logs
+        run: node scripts/sync-future-logs.cjs
+      - name: Commit only verified game-log changes
+        run: |
+          if git diff --quiet -- public/future-game-logs.json public/future-game-logs.js; then
+            echo "No verified game-log changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/future-game-logs.json public/future-game-logs.js
+          git commit -m "Sync verified PCBL future game logs"
+          git pull --rebase origin main
+          git push origin HEAD:main

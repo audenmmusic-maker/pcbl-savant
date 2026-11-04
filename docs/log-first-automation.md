@@ -65,3 +65,16 @@ The existing Google Docs bridge currently exposed S1–S3 only in the last verif
 ## Implementation
 
 Client parser: public/live-log-parser.js. Future-season calculator: public/future-stats.js. Existing identity/validation registry: public/play-database.js. UI source integration: public/app.js and public/unified-data.js. Regression tests: tests/future-stats.test.cjs and tests/future-integration.test.cjs.
+
+## Durable background synchronization
+
+GitHub Actions now runs the read-only game-log validation and snapshot job approximately every **30 minutes** even when no one has the Savant website open. Scheduled GitHub Actions can be delayed by the platform; this is not a guaranteed exact-time service.
+
+- Source: the same official Google Docs Apps Script bridge.
+- Only future-season games with complete scoring metadata and passing the PCBL event validator are committed into the small versioned generated archive in the repository.
+- The resulting commit automatically triggers the existing Cloudflare Worker deploy. The next page visit loads the last verified games without fetching Google Docs.
+- Open browser sessions also refresh the same live bridge every five minutes.
+- Incomplete game logs never overwrite a previous verified snapshot. A game intentionally removed from the Google Doc must be retired deliberately in the repository rather than being silently erased.
+- The source sheet is not needed for game-log-derived future-season statistics once all of a player's logged games are scored and validated.
+- The scheduled runner is GitHub Actions: .github/workflows/sync-future-logs.yml. The ingestion code is scripts/sync-future-logs.cjs. Generated archives are public/future-game-logs.json and public/future-game-logs.js.
+- Successful code tests and deploys do not prove that new live S4/S5 tabs are present. Until those tabs appear, the generated archive remains empty and the old sheet retains its historical S4/S5 figures.
